@@ -1,13 +1,11 @@
 <template>
     <div class="game-list">
-      <div
-        v-for="game in games"
-        :key="game.id"
-        class="game-card"
-        @click="$emit('game-selected', game.id)"
-      >
-        
-        <p>{{ game.name }}</p>
+      <div v-for="(match, index) in matches" :key="index" class="match-card">
+        <p><strong>Match ID:</strong> {{ match.match_uid }}</p>
+        <p><strong>Game Mode:</strong> {{ match.gamemode.name }}</p>
+        <p><strong>Result:</strong> {{ match.stats.is_win ? 'Winner' : 'Loser' }}</p>
+        <p><strong>KDA:</strong> {{ match.stats.kills }}/{{ match.stats.deaths }}/{{ match.stats.assists }}</p>
+        <p><strong>Duration:</strong> {{ match.match_duration.minutes }}:{{match.match_duration.seconds}}</p>
       </div>
     </div>
   </template>
@@ -15,9 +13,15 @@
   <script>
   export default {
     props: {
-      games: {
+      matches: {
         type: Array,
         required: true,
+      },
+    },
+    methods: {
+      formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString(); // Format date as "MM/DD/YYYY"
       },
     },
   };
@@ -26,34 +30,18 @@
   <style scoped>
   .game-list {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-direction: column;
     gap: 20px;
   }
   
-  .game-card {
-    width: 150px;
-    cursor: pointer;
-    text-align: center;
+  .match-card {
     border: 1px solid #ddd;
-    border-radius: 8px;
     padding: 10px;
-    transition: transform 0.2s;
-  }
-  
-  .game-card:hover {
-    transform: scale(1.05);
-  }
-  
-  .game-card img {
-    width: 100%;
-    height: 150px;
-    object-fit: cover;
     border-radius: 8px;
+    background-color: #f9f9f9;
   }
   
-  .game-card p {
-    margin-top: 10px;
-    font-size: 1rem;
+  .match-card p {
+    margin: 5px 0;
   }
   </style>

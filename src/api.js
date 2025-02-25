@@ -1,9 +1,11 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:5000/api', // Point to your backend server
-  maxRate: 2,
-},
-);
+  baseURL: 'http://localhost:5000/api', // Backend server URL
+});
 
-export default apiClient;
+export default {
+  getPlayerMatches(playerName) {
+    return apiClient.get(`/player-matches/${playerName}`);
+  },
+};

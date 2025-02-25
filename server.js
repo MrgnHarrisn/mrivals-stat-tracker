@@ -32,28 +32,74 @@ const limiter = rateLimit({
 // Apply rate limiting to all requests
 app.use(limiter);
 
-// Proxy endpoint for fetching player data
-app.get('/api/player-id/:playerName', async (req, res) => {
-  const { playerName } = req.params;
-
+/**
+ * Fetches the player ID based on the player name.
+ */
+async function getPlayerId(playerName) {
   try {
-    // Make a request to the external API
     const response = await axios.get(`${API_BASE_URL}/player-id/${playerName}`, {
       headers: {
         'X-API-Key': API_KEY,
       },
     });
-
-    // Forward the API response to the frontend
-    res.json(response.data);
+    return response.data.id; // Assuming the API returns an object with an `id` field
   } catch (error) {
-    console.error('Error fetching player data:', error.message);
+    console.error('Error fetching player ID:', error.message);
+    throw new Error('Failed to fetch player ID.');
+  }
+}
 
-    if (error.response) {
-      // Forward the error status and message from the API
-      res.status(error.response.status).json({ error: error.response.data });
+/**
+ * Fetches all pages of match data for a given player ID.
+ */
+async function getPlayerMatches(playerId) {
+  let page = 1;
+  let allData = [];
+
+  while (true) {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/player-match/${playerId}`, {
+        headers: {
+          'X-API-Key': API_KEY,
+        },
+        params: { page }, // Pagination parameter
+      });
+
+      const data = response.data;
+      if (!data.length) break; // Stop if no more matches are returned
+
+      allData = [...allData, ...data];
+      page++;
+    } catch (error) {
+      console.error('Error fetching player matches:', error.message);
+      throw new Error('Failed to fetch player matches.');
+    }
+  }
+
+  return allData;
+}
+
+/**
+ * Endpoint to fetch player matches by player name.
+ */
+app.get('/api/player-matches/:playerName', async (req, res) => {
+  const { playerName } = req.params;
+
+  try {
+    // Step 1: Fetch the player ID
+    const playerId = await getPlayerId(playerName);
+
+    // Step 2: Fetch all match data for the player
+    const matches = await getPlayerMatches(playerId);
+
+    // Return the match data to the frontend
+    res.json(matches);
+  } catch (error) {
+    console.error('Error processing request:', error.message);
+
+    if (error.message === 'Failed to fetch player ID.') {
+      res.status(404).json({ error: 'Player not found.' });
     } else {
-      // Handle other errors (e.g., network issues)
       res.status(500).json({ error: 'An unexpected error occurred.' });
     }
   }
