@@ -20,5 +20,13 @@ npm run build
 npm run lint
 ```
 
+### Backend Server
+```
+node server.js
+```
+
+### API
+See [Marvel Rivals API](https://lunarapi.org/docs) to get an API key.
+
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
